@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ultimate Game Arcade v4.2</title>
+    <style>
+        /* --- CSS RESET & THEME --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        :root {
+            --bg-dark: #0f172a; --bg-card: #1e293b; --text-light: #f8fafc; --text-dim: #94a3b8;
+            --accent-gold: #fbbf24; --accent-green: #4ade80; --accent-cyan: #22d3ee; --danger: #ef4444;
+            --transition: all 0.2s ease;
+        }
+        body { background-color: var(--bg-dark); color: var(--text-light); font-family: 'Segoe UI', Roboto, sans-serif; min-height: 100vh; width: 100%; overflow-x: hidden; }
+        
+        /* --- SCREEN SYSTEM --- */
+        .screen { display: none; min-height: 100vh; width: 100%; padding: 20px; flex-direction: column; align-items: center; animation: fadeIn 0.3s ease-in; }
+        .screen.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .back-btn { position: absolute; top: 20px; left: 20px; padding: 10px 15px; background: var(--bg-card); color: white; border: 2px solid var(--text-dim); border-radius: 8px; z-index: 100; font-weight: bold; }
+
+        /* --- MAIN MENU --- */
+        .hub-container { text-align: center; max-width: 1000px; margin: 0 auto; padding-top: 60px; width: 100%; }
+        .hub-title { font-size: 3rem; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 4px; background: linear-gradient(to right, var(--accent-gold), var(--accent-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .game-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; width: 100%; padding: 20px; }
+        .game-card { background: var(--bg-card); padding: 30px; border-radius: 20px; border: 3px solid transparent; display: flex; flex-direction: column; align-items: center; transition: var(--transition); }
+        .game-card:active { transform: scale(0.95); }
+        .game-card .icon { font-size: 4rem; margin-bottom: 15px; }
+        .game-card h2 { margin-bottom: 10px; font-size: 1.8rem; }
+        .game-card p { color: var(--text-dim); text-align: center; }
+        .card-blackjack:hover { border-color: var(--accent-gold); }
+        .card-scramble:hover { border-color: var(--accent-green); }
+        .card-snake:hover { border-color: var(--accent-cyan); }
+        .card-cookie:hover { border-color: #fca5a5; }
+        .card-dice:hover { border-color: #f87171; }
+        .card-fakemon:hover { border-color: #fbbf24; }
+
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; margin: 10px; transition: var(--transition); }
+        .settings-btn { position: fixed; top: 20px; right: 20px; z-index: 1000; width: 45px; height: 45px; border-radius: 50%; background: var(--bg-card); color: white; border: 2px solid var(--text-dim); }
+
+        /* --- BLACKJACK --- */
+        .bj-accent { color: var(--accent-gold); } .bj-btn { background: var(--accent-gold); color: #000; }
+        .bj-table { display: flex; justify-content: center; gap: 20px; margin: 20px 0; }
+        .hand-area { min-height: 100px; display: flex; gap: 10px; justify-content: center; }
+        .card { width: 60px; height: 90px; background: white; border-radius: 8px; color: black; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; font-weight: bold; }
+        .card.red { color: #ef4444; } .card.hidden { background: #475569; color: #475569; }
+        .bet-input { background: transparent; border: 1px solid var(--text-dim); color: white; width: 60px; text-align: center; padding: 5px; }
+
+        /* --- WORD SCRAMBLE --- */
+        .sc-accent { color: var(--accent-green); } .sc-btn { background: var(--accent-green); color: #000; }
+        .sc-word { font-size: 2.5rem; font-weight: bold; margin: 20px 0; letter-spacing: 5px; }
+        .sc-input { font-size: 1.2rem; padding: 10px; width: 80%; border-radius: 8px; border: none; text-align: center; margin-bottom: 20px; }
+        .timer-bar-container { width: 100%; height: 10px; background: #334155; border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
+        .timer-bar { height: 100%; width: 100%; background: var(--accent-green); transition: width 0.1s linear; }
+
+        /* --- SNAKE --- */
+        .sn-accent { color: var(--accent-cyan); } .sn-btn { background: var(--accent-cyan); color: #000; }
+        .canvas-wrapper { position: relative; width: 100%; max-width: 400px; margin: 0 auto; }
+        canvas { max-width: 100% !important; height: auto !important; background: #020617; border: 4px solid #334155; border-radius: 10px; }
+        .pause-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3rem; font-weight: bold; display: none; }
+
+        /* --- COOKIE CLICKER (FIXED) --- */
+        .cookie-accent { color: #fca5a5; }
+        .cookie-container { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            width: 100%; 
+            min-height: 60vh;
+        }
+        .cookie-stats { margin-bottom: 20px; text-align: center; }
+        .cookie-stats h2 { font-size: 2.5rem; }
+        .cookie-stats p { font-size: 1.2rem; color: var(--text-dim); }
+        .cookie-emoji { 
+            font-size: 8rem; 
+            cursor: pointer; 
+            display: block; 
+            margin: 20px 0;
+            transition: transform 0.05s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .cookie-emoji:active { transform: scale(0.9); }
+        .upgrade-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 15px; 
+            margin-top: 30px; 
+            width: 100%; 
+            max-width: 500px; 
+        }
+        .upgrade-btn { 
+            background: var(--bg-card); 
+            color: white; 
+            border: 2px solid #fca5a5; 
+            padding: 15px; 
+            border-radius: 12px; 
+            text-align: left; 
+            font-size: 0.9rem; 
+            cursor: pointer;
+        }
+        .upgrade-btn:disabled { opacity: 0.4; border-color: #475569; }
+
+        /* --- DICE ROLL --- */
+        .dice-accent { color: #f87171; } .dice-btn { background: #f87171; color: white; }
+        .dice-bet-area { background: var(--bg-card); padding: 20px; border-radius: 15px; display: flex; flex-direction: column; gap: 10px; max-width: 300px; margin: 0 auto 20px; }
+        .dice-bet-area input, .dice-bet-area select { padding: 10px; border-radius: 5px; border: none; }
+        .dice-result { font-size: 4rem; margin: 20px 0; }
+
+        /* --- FAKEMON BATTLE --- */
+        #fakemon-battle-ui {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 50%, #90EE90 50%, #90EE90 100%);
+            display: none; z-index: 10; border-radius: 10px; border: 4px solid #334155;
+            font-family: 'Courier New', monospace;
+        }
+        .battle-panel { position: absolute; background: #f8f8f8; border: 3px solid #444; border-radius: 10px; color: #333; padding: 10px; width: 180px; }
+        .enemy-panel { top: 20px; right: 10px; }
+        .player-panel { bottom: 140px; left: 10px; }
+        .hp-bg { background: #ccc; height: 10px; width: 100%; border-radius: 5px; margin-top: 5px; overflow: hidden; }
+        .hp-bar { background: #4ade80; height: 100%; width: 100%; transition: width 0.5s ease; }
+        .battle-menu { position: absolute; bottom: 0; left: 0; width: 100%; height: 120px; background: #fff; border-top: 4px solid #444; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 10px; }
+        .menu-btn { background: #eee; border: 2px solid #aaa; border-radius: 5px; font-size: 1rem; font-weight: bold; color: #333; }
+        .battle-text { position: absolute; bottom: 130px; left: 10px; right: 10px; background: rgba(255,255,255,0.9); color: #000; padding: 10px; border: 2px solid #444; border-radius: 5px; font-size: 0.9rem; display: none; z-index: 11; }
+        .battle-sprite { position: absolute; font-size: 70px; transition: all 0.3s; }
+        .enemy-sprite { top: 60px; right: 40px; }
+        .player-sprite { bottom: 160px; left: 40px; }
+
+        /* --- D-PAD --- */
+        .dpad { display: grid; grid-template-columns: repeat(3, 65px); gap: 10px; justify-content: center; margin-top: 20px; }
+        .dbtn { width: 65px; height: 65px; background: var(--bg-card); color: white; border: 3px solid var(--accent-cyan); border-radius: 15px; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; }
+        .dbtn:active { background: var(--accent-cyan); color: black; }
+
+        /* --- SETTINGS & MODAL --- */
+        .settings-container { background: var(--bg-card); padding: 30px; border-radius: 20px; width: 350px; margin-top: 60px; }
+        .setting-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .overlay-content { background: var(--bg-card); padding: 40px; border-radius: 20px; border: 2px solid var(--text-dim); text-align: center; }
+
+        @media (max-width: 600px) {
+            .hub-title { font-size: 2rem; }
+            .game-grid { grid-template-columns: 1fr; }
+            .battle-panel { width: 140px; font-size: 0.7rem; }
+            .enemy-sprite { right: 10px; }
+            .player-sprite { left: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="settings-btn" onclick="GameHub.app.startGame('settings')">⚙️</button>
+
+    <!-- MAIN MENU -->
+    <div id="menu-screen" class="screen active">
+        <div class="hub-container">
+            <h1 class="hub-title">Game Arcade</h1>
+            <div class="game-grid">
+                <div class="game-card card-blackjack" onclick="GameHub.app.startGame('blackjack')"><div class="icon">🃏</div><h2>Blackjack</h2><p>Beat the dealer!</p></div>
+                <div class="game-card card-scramble" onclick="GameHub.app.startGame('scramble')"><div class="icon">🔤</div><h2>Word Scramble</h2><p>Unscramble letters!</p></div>
+                <div class="game-card card-snake" onclick="GameHub.app.startGame('snake')"><div class="icon">🐍</div><h2>Snake</h2><p>Eat and grow!</p></div>
+                <div class="game-card card-cookie" onclick="GameHub.app.startGame('cookie')"><div class="icon">🍪</div><h2>Cookie Clicker</h2><p>Click the cookie!</p></div>
+                <div class="game-card card-dice" onclick="GameHub.app.startGame('dice')"><div class="icon">🎲</div><h2>Dice Bet</h2><p>Lucky number!</p></div>
+                <div class="game-card card-fakemon" onclick="GameHub.app.startGame('fakemon')"><div class="icon">🐾</div><h2>FakeMon</h2><p>Catch them all!</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BLACKJACK -->
+    <div id="blackjack-screen" class="screen">
+        <button class="back-btn" onclick="GameHub.app.showMenu()">← Menu</button>
+        <div class="game-container">
+            <h1 class="bj-accent">Blackjack</h1>
+            <div class="bet-controls">Chips: $<span id="bj-chips">500</span> | Bet: $<input type="number" id="bj-bet-input" class="bet-input" value="10" min="10">
+                <button class="btn bj-btn" onclick="GameHub.blackjack.adjustBet(10)">+</button>
+                <button class="btn bj-btn" onclick="GameHub.blackjack.adjustBet(-10)">-</button>
+            </div>
+            <div class="bj-table">
+                <div><h3>Dealer <span id="bj-dealer-score" style="display:none"></span></h3><div id="bj-dealer-hand" class="hand-area"></div></div>
+                <div><h3>You <span id="bj-player-score"></span></h3><div id="bj-player-hand" class="hand-area"></div></div>
+            </div>
+            <div id="bj-controls">
+                <button id="bj-deal-btn" class="btn bj-btn" onclick="GameHub.blackjack.deal()">Deal</button>
+                <div id="bj-action-btns" style="display:none">
+                    <button class="btn bj-btn" onclick="GameHub.blackjack.hit()">Hit</button>
+                    <button class="btn bj-btn" onclick="GameHub.blackjack.stand()">Stand</button>
+                    <button class="btn bj-btn" onclick="GameHub.blackjack.double()">Double</button>
+                </div>
+            </div>
+            <h2 id="bj-message" style="margin-top:20px"></h2>
+            <button id="bj-next-btn" class="btn bj-btn" style="display:none; margin-top:20px" onclick="GameHub.blackjack.resetRound()">New Round</button>
+        </div>
+    </div>
+
+    <!-- SCRAMBLE -->
+    <div id="scramble-screen" class="screen">
+        <button class="back-btn" onclick="GameHub.app.showMenu()">← Menu</button>
+        <div class="game-container">
+            <h1 class="sc-accent">Word Scramble</h1>
+            <div class="stats-bar"><span>Score: <b id="sc-score">0</b></span><span>Streak: <b id="sc-streak">0</b></span><span>Word: <b id="sc-count">1</b>/10</span></div>
+            <div class="timer-bar-container"><div id="sc-timer-bar" class="timer-bar"></div></div>
+            <div id="sc-word" class="sc-word">-----</div>
+            <input type="text" id="sc-input" class="sc-input" placeholder="Type your guess..." autocomplete="off">
+            <div>
+                <button class="btn sc-btn" onclick="GameHub.wordScramble.checkGuess()">Submit</button>
+                <button id="sc-hint-btn" class="btn sc-btn" onclick="GameHub.wordScramble.useHint()">Hint (-3 pts)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SNAKE -->
+    <div id="snake-screen" class="screen">
+        <button class="back-btn" onclick="GameHub.app.showMenu()">← Menu</button>
+        <div class="game-container">
+            <h1 class="sn-accent">Classic Snake</h1>
+            <div style="margin: 10px 0; font-size: 1.2rem;">Score: <span id="sn-score">0</span> | High Score: <span id="sn-highscore">0</span></div>
+            <div class="canvas-wrapper"><canvas id="snakeCanvas" width="400" height="400"></canvas><div id="sn-pause-msg" class="pause-overlay">PAUSED</div></div>
+            <div class="dpad"><div></div><button class="dbtn" onclick="GameHub.snake.setDir('UP')">↑</button><div></div><button class="dbtn" onclick="GameHub.snake.setDir('LEFT')">←</button><button class="dbtn" onclick="GameHub.snake.setDir('DOWN')">↓</button><button class="dbtn" onclick="GameHub.snake.setDir('RIGHT')">→</button></div>
+            <button class="btn sn-btn" style="margin-top:15px" onclick="GameHub.snake.togglePause()">Pause</button>
+        </div>
+    </div>
+
+    <!-- COOKIE CLICKER -->
+    <div id="cookie-screen" class="screen">
+        <button class="back-btn" onclick="GameHub.app.showMenu()">← Menu</button>
+        <div class="game-container cookie-container">
+            <h1 class="cookie-accent">Cookie Clicker</h1>
+            <div class="cookie-stats">
+                <h2 id="cookie-count">0 Cookies</h2>
+                <p id="cookie-cps">CPS: 0</p>
+            </div>
+            <div id="cookie-clicker" class="cookie-emoji" onclick="GameHub.cookieClicker.clickCookie()" ontouchstart="GameHub.cookieClicker.handleTouch(event)">🍪</div>
+            <div class="upgrade-grid" id="upgrade-list"></div>
+        </div>
+    </div>
+
+    <!-- DICE ROLL -->
+    <div id="dice-screen" class="screen">
+        <button class="back-btn" onclick="GameHub.app.showMenu()">← Menu</button>
+        <div class="game-container">
+            <h1 class="dice-accent">Dice Bet</h1>
+            <div class="dice-stats" style="font-size: 1.5rem; margin-bottom: 10px;">Balance: $<span id="dice-balance">500</span></div>
+            <div class="dice-bet-area">
+                <label>Your Bet: $</label><input type="number" id="dice-bet-amount" value="10" min="1">
+                <label>Pick Number (1-6):</label><select id="dice-number"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>
+                <button class="btn dice-btn" onclick="GameHub.diceRoll.roll()">Roll Dice!</button>
+            </div>
+            <div id="dice-result-display" class="dice-result">🎲 ?</div>
+            <h2 id="dice-message">Place your bet!</h2>
+        </div>
+    </div>
+
+    <!-- FAKEMON -->
+    <div id="fakemon-screen" class="screen">
+        <button class="back-btn" onclick="GameHub.app.showMenu()">← Menu</button>
+        <div class="game-container">
+            <h1 class="fakemon-accent">FakeMon</h1>
+            <div class="fakemon-stats" style="font-size: 1.5rem; margin-bottom: 10px;">Caught: <span id="fakemon-caught">0</span> / 10</div>
+            <div class="canvas-wrapper">
+                <canvas id="fakemonCanvas" width="500" height="500"></canvas>
+                <div id="fakemon-battle-ui">
+                    <div class="battle-panel enemy-panel">
+                        <div id="enemy-name">Monster</div>
+                        <div style="font-size: 0.8rem">Lv. <span id="enemy-lv">5</span></div>
+                        <div class="hp-bg"><div id="enemy-hp" class="hp-bar"></div></div>
+                    </div>
+                    <div class="battle-sprite enemy-sprite" id="enemy-sprite">🐶</div>
+                    <div class="battle-panel player-panel">
+                        <div id="player-name">Pikachu</div>
+                        <div style="font-size: 0.8rem">Lv. <span id="player-lv">10</span></div>
+                        <div class="hp-bg"><div id="player-hp" class="hp-bar"></div></div>
+                    </div>
+                    <div class="battle-sprite player-sprite" id="player-sprite">🚶</div>
+                    <div id="battle-text" class="battle-text">A wild monster appeared!</div>
+                    <div class="battle-menu">
+                        <button class="menu-btn" onclick="GameHub.fakemon.battleAction('attack')">Battle</button>
+                        <button class="menu-btn" onclick="GameHub.fakemon.battleAction('catch')">Catch</button>
+                        <button class="menu-btn" onclick="GameHub.fakemon.battleAction('pokemon')">Pokémon</button>
+                        <button class="menu-btn" onclick="GameHub.fakemon.battleAction('run')">Run</button>
+                    </div>
+                </div>
+            </div>
+            <div class="dpad">
+                <div></div><button class="dbtn" ontouchstart="GameHub.fakemon.startMove('UP')" ontouchend="GameHub.fakemon.stopMove()" onmousedown="GameHub.fakemon.startMove('UP')" onmouseup="GameHub.fakemon.stopMove()">↑</button><div></div>
+                <button class="dbtn" ontouchstart="GameHub.fakemon.startMove('LEFT')" ontouchend="GameHub.fakemon.stopMove()" onmousedown="GameHub.fakemon.startMove('LEFT')" onmouseup="GameHub.fakemon.stopMove()">←</button>
+                <button class="dbtn" ontouchstart="GameHub.fakemon.startMove('DOWN')" ontouchend="GameHub.fakemon.stopMove()" onmousedown="GameHub.fakemon.startMove('DOWN')" onmouseup="GameHub.fakemon.stopMove()">↓</button>
+                <button class="dbtn" ontouchstart="GameHub.fakemon.startMove('RIGHT')" ontouchend="GameHub.fakemon.stopMove()" onmousedown="GameHub.fakemon.startMove('RIGHT')" onmouseup="GameHub.fakemon.stopMove()">→</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="settings-screen" class="screen">
+        <button class="back-btn" onclick="GameHub.app.showMenu()">← Menu</button>
+        <div class="settings-container">
+            <h1 style="text-align:center; margin-bottom:20px;">Settings</h1>
+            <div class="setting-item"><label>Background:</label><select onchange="GameHub.settings.changeBg(this.value)"><option value="var(--bg-dark)">Default Dark</option><option value="#1a1a2e">Midnight Blue</option><option value="#2d1a2e">Deep Purple</option><option value="#1a2e1a">Forest Green</option><option value="#000000">Pitch Black</option></select></div>
+            <div class="setting-item"><label>Accent Color:</label><input type="color" onchange="GameHub.settings.changeAccent(this.value)"></div>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal-overlay" class="overlay">
+        <div class="overlay-content"><h1 id="modal-title">Game Over</h1><p id="modal-body" style="margin: 20px 0; font-size: 1.2rem;"></p><button id="modal-btn" class="btn">Play Again</button></div>
+    </div>
+
+    <script>
+        window.GameHub = {};
+
+        /* --- APP LOGIC --- */
+        GameHub.app = {
+            startGame(game) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(`${game}-screen`).classList.add('active');
+                if (game === 'blackjack') GameHub.blackjack.init();
+                if (game === 'scramble') GameHub.wordScramble.init();
+                if (game === 'snake') GameHub.snake.init();
+                if (game === 'cookie') GameHub.cookieClicker.init();
+                if (game === 'dice') GameHub.diceRoll.init();
+                if (game === 'fakemon') GameHub.fakemon.init();
+            },
+            showMenu() {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('menu-screen').classList.add('active');
+                if (GameHub.snake && GameHub.snake.stop) GameHub.snake.stop();
+                if (GameHub.wordScramble && GameHub.wordScramble.timerInterval) clearInterval(GameHub.wordScramble.timerInterval);
+                if (GameHub.fakemon && GameHub.fakemon.gameLoop) cancelAnimationFrame(GameHub.fakemon.gameLoop);
+                if (GameHub.cookieClicker && GameHub.cookieClicker.autoInterval) clearInterval(GameHub.cookieClicker.autoInterval);
+            },
+            showModal(title, body, btnText, callback) {
+                const modal = document.getElementById('modal-overlay');
+                document.getElementById('modal-title').innerText = title;
+                document.getElementById('modal-body').innerText = body;
+                const btn = document.getElementById('modal-btn');
+                btn.innerText = btnText;
+                btn.onclick = () => { modal.style.display = 'none'; callback(); };
+                modal.style.display = 'flex';
+            }
+        };
+
+        /* --- BLACKJACK --- */
+        GameHub.blackjack = {
+            chips: 500, deck: [], playerHand: [], dealerHand: [], currentBet: 0, gameActive: false,
+            init() { this.chips = 500; this.updateUI(); },
+            updateUI() { document.getElementById('bj-chips').innerText = this.chips; },
+            adjustBet(amt) {
+                let input = document.getElementById('bj-bet-input');
+                let val = parseInt(input.value) + amt;
+                if (val < 10) val = 10; if (val > this.chips) val = this.chips;
+                input.value = val;
+            },
+            createDeck() {
+                const suits = ['♠', '♥', '♦', '♣'], values = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+                this.deck = [];
+                for (let s of suits) for (let v of values) this.deck.push({ value: v, suit: s, color: (s === '♥' || s === '♦') ? 'red' : 'black' });
+                this.deck.sort(() => Math.random() - 0.5);
+            },
+            getHandValue(hand) {
+                let value = 0, aces = 0;
+                for (let card of hand) {
+                    if (card.value === 'A') { aces++; value += 11; }
+                    else if (['J','Q','K'].includes(card.value)) value += 10;
+                    else value += parseInt(card.value);
+                }
+                while (value > 21 && aces > 0) { value -= 10; aces--; }
+                return value;
+            },
+            renderCard(card, isHidden = false) {
+                const div = document.createElement('div');
+                div.className = `card ${isHidden ? 'hidden' : card.color}`;
+                div.innerHTML = isHidden ? `<div style="margin:auto">?</div>` : `<div>${card.value}</div><div style="text-align:center; font-size:1.5rem">${card.suit}</div><div style="text-align:right">${card.value}</div>`;
+                return div;
+            },
+            deal() {
+                this.currentBet = parseInt(document.getElementById('bj-bet-input').value);
+                if (this.currentBet > this.chips) return alert("Not enough chips!");
+                this.chips -= this.currentBet; this.updateUI();
+                this.createDeck();
+                this.playerHand = [this.deck.pop(), this.deck.pop()];
+                this.dealerHand = [this.deck.pop(), this.deck.pop()];
+                this.gameActive = true;
+                document.getElementById('bj-deal-btn').style.display = 'none';
+                document.getElementById('bj-action-btns').style.display = 'block';
+                document.getElementById('bj-next-btn').style.display = 'none';
+                document.getElementById('bj-message').innerText = "";
+                document.getElementById('bj-dealer-score').style.display = 'none';
+                this.updateTable();
+                if (this.getHandValue(this.playerHand) === 21) this.stand();
+            },
+            updateTable() {
+                const pHandDiv = document.getElementById('bj-player-hand'), dHandDiv = document.getElementById('bj-dealer-hand');
+                pHandDiv.innerHTML = ''; dHandDiv.innerHTML = '';
+                this.playerHand.forEach(c => pHandDiv.appendChild(this.renderCard(c)));
+                this.dealerHand.forEach((c, i) => dHandDiv.appendChild(this.renderCard(c, i === 1 && this.gameActive)));
+                document.getElementById('bj-player-score').innerText = `(${this.getHandValue(this.playerHand)})`;
+            },
+            hit() {
+                this.playerHand.push(this.deck.pop()); this.updateTable();
+                if (this.getHandValue(this.playerHand) > 21) this.endRound("Bust! Dealer wins.");
+            },
+            double() {
+                if (this.chips < this.currentBet) return alert("Not enough chips!");
+                this.chips -= this.currentBet; this.currentBet *= 2; this.updateUI();
+                this.hit(); if (this.getHandValue(this.playerHand) <= 21) this.stand();
+            },
+            stand() {
+                this.gameActive = false;
+                let dValue = this.getHandValue(this.dealerHand);
+                while (dValue < 17) { this.dealerHand.push(this.deck.pop()); dValue = this.getHandValue(this.dealerHand); }
+                this.updateTable();
+                document.getElementById('bj-dealer-score').style.display = 'inline';
+                document.getElementById('bj-dealer-score').innerText = `(${dValue})`;
+                const pValue = this.getHandValue(this.playerHand);
+                if (dValue > 21 || pValue > dValue) {
+                    let winAmt = this.currentBet * 2;
+                    if (pValue === 21 && this.playerHand.length === 2) winAmt = this.currentBet * 2.5;
+                    this.chips += winAmt; this.endRound("You Win!");
+                } else if (pValue < dValue) this.endRound("Dealer Wins.");
+                else { this.chips += this.currentBet; this.endRound("Push (Tie)."); }
+            },
+            endRound(msg) {
+                this.gameActive = false;
+                document.getElementById('bj-message').innerText = msg;
+                document.getElementById('bj-action-btns').style.display = 'none';
+                document.getElementById('bj-next-btn').style.display = 'inline-block';
+                this.updateUI();
+                if (this.chips <= 0) GameHub.app.showModal("Bankrupt!", "You ran out of chips!", "Restart", () => { this.chips = 500; this.updateUI(); this.resetRound(); });
+            },
+            resetRound() {
+                document.getElementById('bj-deal-btn').style.display = 'inline-block';
+                document.getElementById('bj-action-btns').style.display = 'none';
+                document.getElementById('bj-next-btn').style.display = 'none';
+                document.getElementById('bj-dealer-hand').innerHTML = '';
+                document.getElementById('bj-player-hand').innerHTML = '';
+                document.getElementById('bj-player-score').innerText = '';
+                document.getElementById('bj-dealer-score').style.display = 'none';
+                document.getElementById('bj-message').innerText = '';
+            }
+        };
+
+        /* --- WORD SCRAMBLE --- */
+        GameHub.wordScramble = {
+            words: [{w: 'Elephant', d: 1}, {w: 'Giraffe', d: 1}, {w: 'Kangaroo', d: 1}, {w: 'Penguin', d: 1}, {w: 'Hamster', d: 1}, {w: 'Japan', d: 1}, {w: 'Canada', d: 1}, {w: 'Brazil', d: 1}, {w: 'France', d: 1}, {w: 'Egypt', d: 1}, {w: 'Pizza', d: 1}, {w: 'Burger', d: 1}, {w: 'Taco', d: 1}, {w: 'Sushi', d: 1}, {w: 'Pasta', d: 1}, {w: 'Soccer', d: 1}, {w: 'Tennis', d: 1}, {w: 'Hockey', d: 1}, {w: 'Rugby', d: 1}, {w: 'Boxing', d: 1}, {w: 'Astronaut', d: 2}, {w: 'Architect', d: 2}, {w: 'Detective', d: 2}, {w: 'Engineer', d: 2}, {w: 'Musician', d: 2}, {w: 'Australia', d: 2}, {w: 'Argentina', d: 2}, {w: 'Thailand', d: 2}, {w: 'Iceland', d: 2}, {w: 'Germany', d: 2}, {w: 'Chocolate', d: 2}, {w: 'Avocado', d: 2}, {w: 'Pineapple', d: 2}, {w: 'Coconut', d: 2}, {w: 'Pumpkin', d: 2}, {w: 'Synchronize', d: 3}, {w: 'Philosophy', d: 3}, {w: 'Atmosphere', d: 3}, {w: 'Algorithm', d: 3}, {w: 'Hypothesis', d: 3}],
+            currentWord: '', score: 0, streak: 0, count: 0, timer: 30, timerInterval: null, difficulty: 1, hintUsed: false,
+            init() { this.score = 0; this.streak = 0; this.count = 0; this.difficulty = 1; this.nextWord(); },
+            nextWord() {
+                this.count++; if (this.count > 10) { this.endGame(); return; }
+                this.hintUsed = false; document.getElementById('sc-hint-btn').disabled = false;
+                document.getElementById('sc-count').innerText = this.count;
+                document.getElementById('sc-input').value = '';
+                const pool = this.words.filter(w => w.d <= this.difficulty);
+                const pick = pool[Math.floor(Math.random() * pool.length)];
+                this.currentWord = pick.w;
+                let s = this.currentWord.split('').sort(() => Math.random() - 0.5).join('');
+                while (s.toLowerCase() === this.currentWord.toLowerCase()) s = this.currentWord.split('').sort(() => Math.random() - 0.5).join('');
+                document.getElementById('sc-word').innerText = s;
+                this.startTimer();
+            },
+            startTimer() {
+                clearInterval(this.timerInterval); this.timer = 30;
+                const bar = document.getElementById('sc-timer-bar');
+                this.timerInterval = setInterval(() => {
+                    this.timer -= 0.1; bar.style.width = (this.timer / 30 * 100) + '%';
+                    if (this.timer <= 0) { clearInterval(this.timerInterval); this.streak = 0; this.updateStats(); this.nextWord(); }
+                }, 100);
+            },
+            checkGuess() {
+                const guess = document.getElementById('sc-input').value.trim().toLowerCase();
+                if (guess === this.currentWord.toLowerCase()) {
+                    let points = 10; if (this.timer > 25) points += 5;
+                    this.score += points; this.streak++; if (this.streak % 5 === 0) this.difficulty++;
+                    this.updateStats(); clearInterval(this.timerInterval); this.nextWord();
+                } else {
+                    document.getElementById('sc-input').style.border = '2px solid red';
+                    setTimeout(() => { document.getElementById('sc-input').style.border = 'none'; }, 500);
+                }
+            },
+            useHint() {
+                if (this.hintUsed) return; this.score = Math.max(0, this.score - 3); this.updateStats();
+                this.hintUsed = true; document.getElementById('sc-hint-btn').disabled = true;
+                const idx = Math.floor(Math.random() * this.currentWord.length);
+                alert(`Hint: Letter at position ${idx + 1} is ${this.currentWord[idx]}`);
+            },
+            updateStats() { document.getElementById('sc-score').innerText = this.score; document.getElementById('sc-streak').innerText = this.streak; },
+            endGame() { clearInterval(this.timerInterval); GameHub.app.showModal("Complete!", `Score: ${this.score}`, "Play Again", () => this.init()); }
+        };
+
+        /* --- SNAKE --- */
+        GameHub.snake = {
+            canvas: null, ctx: null, snake: [], food: {x: 0, y: 0}, dir: 'RIGHT', nextDir: 'RIGHT', score: 0, highscore: 0, paused: false, speed: 150, lastTime: 0, timer: 0, gameLoop: null,
+            init() { this.canvas = document.getElementById('snakeCanvas'); this.ctx = this.canvas.getContext('2d'); this.reset(); this.start(); },
+            reset() { this.snake = [{x: 10, y: 10}, {x: 9, y: 10}, {x: 8, y: 10}]; this.dir = 'RIGHT'; this.nextDir = 'RIGHT'; this.score = 0; this.speed = 150; this.paused = false; this.spawnFood(); this.updateUI(); },
+            spawnFood() { this.food = { x: Math.floor(Math.random() * 20), y: Math.floor(Math.random() * 20) }; if (this.snake.some(s => s.x === this.food.x && s.y === this.food.y)) this.spawnFood(); },
+            setDir(newDir) { const opposites = { 'UP': 'DOWN', 'DOWN': 'UP', 'LEFT': 'RIGHT', 'RIGHT': 'LEFT' }; if (newDir !== opposites[this.dir]) this.nextDir = newDir; },
+            togglePause() { this.paused = !this.paused; document.getElementById('sn-pause-msg').style.display = this.paused ? 'block' : 'none'; },
+            updateUI() { document.getElementById('sn-score').innerText = this.score; document.getElementById('sn-highscore').innerText = this.highscore; },
+            start() { this.lastTime = performance.now(); this.gameLoop = requestAnimationFrame((t) => this.loop(t)); },
+            stop() { cancelAnimationFrame(this.gameLoop); },
+            loop(timestamp) {
+                const deltaTime = timestamp - this.lastTime; this.lastTime = timestamp; this.timer += deltaTime;
+                if (!this.paused && this.timer >= this.speed) { this.update(); this.draw(); this.timer = 0; }
+                this.gameLoop = requestAnimationFrame((t) => this.loop(t));
+            },
+            update() {
+                this.dir = this.nextDir; const head = { ...this.snake[0] };
+                if (this.dir === 'UP') head.y--; if (this.dir === 'DOWN') head.y++; if (this.dir === 'LEFT') head.x--; if (this.dir === 'RIGHT') head.x++;
+                if (head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20 || this.snake.some(s => s.x === head.x && s.y === head.y)) return this.gameOver();
+                this.snake.unshift(head);
+                if (head.x === this.food.x && head.y === this.food.y) { this.score += 10; if (this.score % 50 === 0) this.speed = Math.max(60, this.speed - 10); this.spawnFood(); this.updateUI(); } else this.snake.pop();
+            },
+            draw() {
+                this.ctx.clearRect(0, 0, 400, 400); this.ctx.fillStyle = '#ef4444'; this.drawRR(this.food.x * 20, this.food.y * 20, 18, 18, 5);
+                this.snake.forEach((s, i) => { this.ctx.fillStyle = i === 0 ? '#22d3ee' : '#0891b2'; this.drawRR(s.x * 20, s.y * 20, 18, 18, 5); });
+            },
+            drawRR(x, y, w, h, r) { this.ctx.beginPath(); this.ctx.roundRect(x + 1, y + 1, w, h, r); this.ctx.fill(); },
+            gameOver() { if (this.score > this.highscore) this.highscore = this.score; this.updateUI(); GameHub.app.showModal("Game Over!", `Score: ${this.score}`, "Try Again", () => this.reset()); }
+        };
+
+        /* --- COOKIE CLICKER (FIXED) --- */
+        GameHub.cookieClicker = {
+            cookies: 0, cps: 0, autoInterval: null,
+            upgrades: [
+                { name: "Cursor", cost: 15, power: 0.1, count: 0, emoji: "🖱️" },
+                { name: "Grandma", cost: 100, power: 1, count: 0, emoji: "👵" },
+                { name: "Farm", cost: 1100, power: 8, count: 0, emoji: "🌾" },
+                { name: "Mine", cost: 12000, power: 47, count: 0, emoji: "⛏️" },
+                { name: "Factory", cost: 130000, power: 260, count: 0, emoji: "🏭" },
+                { name: "Bank", cost: 1400000, power: 1400, count: 0, emoji: "🏦" },
+                { name: "Temple", cost: 20000000, power: 7800, count: 0, emoji: "🏛️" },
+                { name: "Wizard", cost: 330000000, power: 44000, count: 0, emoji: "🧙" },
+                { name: "Shipment", cost: 5100000000, power: 260000, count: 0, emoji: "🚀" },
+            ],
+            init() { 
+                this.renderUpgrades(); 
+                this.startAuto(); 
+                this.updateUI(); 
+            },
+            clickCookie() { 
+                this.cookies++; 
+                this.updateUI(); 
+            },
+            handleTouch(e) {
+                e.preventDefault();
+                this.clickCookie();
+            },
+            startAuto() { 
+                if(this.autoInterval) clearInterval(this.autoInterval);
+                this.autoInterval = setInterval(() => { 
+                    this.cookies += this.cps / 10; 
+                    this.updateUI(); 
+                }, 100); 
+            },
+            renderUpgrades() {
+                const list = document.getElementById('upgrade-list'); 
+                if(!list) return;
+                list.innerHTML = '';
+                this.upgrades.forEach((upg, i) => {
+                    const btn = document.createElement('button'); 
+                    btn.className = 'upgrade-btn'; 
+                    btn.id = `upg-${i}`;
+                    btn.onclick = () => this.buyUpgrade(i);
+                    btn.innerHTML = `${upg.emoji} ${upg.name}<br>Cost: ${Math.floor(upg.cost)}<br>+${upg.power} CPS`;
+                    list.appendChild(btn);
+                });
+            },
+            buyUpgrade(i) {
+                const upg = this.upgrades[i];
+                if (this.cookies >= upg.cost) { 
+                    this.cookies -= upg.cost; 
+                    upg.count++; 
+                    this.cps += upg.power; 
+                    upg.cost *= 1.15; 
+                    this.renderUpgrades(); 
+                    this.updateUI(); 
+                }
+            },
+            updateUI() {
+                const countEl = document.getElementById('cookie-count');
+                const cpsEl = document.getElementById('cookie-cps');
+                if(countEl) countEl.innerText = `${Math.floor(this.cookies)} Cookies`;
+                if(cpsEl) cpsEl.innerText = `CPS: ${this.cps.toFixed(1)}`;
+                this.upgrades.forEach((upg, i) => { 
+                    const btn = document.getElementById(`upg-${i}`); 
+                    if (btn) btn.disabled = this.cookies < upg.cost; 
+                });
+            }
+        };
+
+        /* --- DICE ROLL --- */
+        GameHub.diceRoll = {
+            balance: 500, init() { this.updateUI(); }, updateUI() { document.getElementById('dice-balance').innerText = this.balance; },
+            roll() {
+                const bet = parseInt(document.getElementById('dice-bet-amount').value), picked = document.getElementById('dice-number').value;
+                const display = document.getElementById('dice-result-display'), msg = document.getElementById('dice-message');
+                if (isNaN(bet) || bet <= 0 || bet > this.balance) return alert("Invalid bet!");
+                this.balance -= bet; this.updateUI();
+                let rolls = 0;
+                const interval = setInterval(() => {
+                    display.innerText = `🎲 ${Math.floor(Math.random() * 6) + 1}`;
+                    if (++rolls > 10) {
+                        clearInterval(interval);
+                        const result = Math.floor(Math.random() * 6) + 1;
+                        display.innerText = `🎲 ${result}`;
+                        if (result == picked) { this.balance += bet * 5; msg.innerText = "JACKPOT!"; msg.style.color = "lime"; }
+                        else { msg.innerText = "Lost!"; msg.style.color = "red"; }
+                        this.updateUI();
+                    }
+                }, 100);
+            }
+        };
+
+        /* --- FAKEMON BATTLE SYSTEM --- */
+        GameHub.fakemon = {
+            canvas: null, ctx: null, 
+            player: { x: 250, y: 250, size: 30, speed: 4, dir: 'STOP' }, 
+            monsters: [], caught: 0, 
+            pool: [
+                {e: '🐶', n: 'Wooflet', lv: 5, hp: 50}, {e: '🐱', n: 'Meowish', lv: 7, hp: 60}, 
+                {e: '🐉', n: 'Drakon', lv: 12, hp: 100}, {e: '🦊', n: 'Foxy', lv: 6, hp: 55}, 
+                {e: '🦁', n: 'Leo', lv: 15, hp: 120}, {e: '🐹', n: 'Hammy', lv: 4, hp: 40}, 
+                {e: '🐨', n: 'Koal', lv: 8, hp: 70}, {e: '🐯', n: 'Tigra', lv: 14, hp: 110}, 
+                {e: '🐸', n: 'Froggo', lv: 5, hp: 50}, {e: '🦄', n: 'Uni', lv: 20, hp: 150}
+            ],
+            party: [
+                {n: 'Leaflet', e: '🌱', hp: 100, maxHp: 100, lv: 10},
+                {n: 'Flamy', e: '🔥', hp: 100, maxHp: 100, lv: 10},
+                {n: 'Aqua', e: '💧', hp: 100, maxHp: 100, lv: 10},
+                {n: 'Sparky', e: '⚡', hp: 100, maxHp: 100, lv: 10}
+            ],
+            grass: [], state: 'WORLD', currentEnemy: null, currentAlly: null,
+            init() { 
+                this.canvas = document.getElementById('fakemonCanvas'); 
+                this.ctx = this.canvas.getContext('2d'); 
+                this.caught = 0; this.state = 'WORLD';
+                this.player.x = 250; this.player.y = 250; 
+                this.createWorld(); this.spawn(); this.start(); 
+            },
+            createWorld() {
+                this.grass = [];
+                for(let i=0; i<60; i++) this.grass.push({x: Math.random()*500, y: Math.random()*500, s: Math.random()*5 + 2});
+            },
+            spawn() { 
+                this.monsters = []; 
+                for (let i = 0; i < 10; i++) {
+                    const p = this.pool[Math.floor(Math.random() * this.pool.length)];
+                    this.monsters.push({ x: Math.random() * 460 + 20, y: Math.random() * 460 + 20, emoji: p.e, name: p.n, lv: p.lv, hp: p.hp, maxHp: p.hp, caught: false, offset: Math.random() * Math.PI * 2 }); 
+                }
+            },
+            startMove(d) { this.player.dir = d; },
+            stopMove() { this.player.dir = 'STOP'; },
+            start() { this.gameLoop = requestAnimationFrame(() => this.loop()); },
+            loop() { this.update(); this.draw(); this.gameLoop = requestAnimationFrame(() => this.loop()); },
+            update() {
+                if (this.state !== 'WORLD') return;
+                if (this.player.dir === 'UP') this.player.y -= this.player.speed; 
+                if (this.player.dir === 'DOWN') this.player.y += this.player.speed;
+                if (this.player.dir === 'LEFT') this.player.x -= this.player.speed; 
+                if (this.player.dir === 'RIGHT') this.player.x += this.player.speed;
+                this.player.x = Math.max(0, Math.min(500 - this.player.size, this.player.x)); 
+                this.player.y = Math.max(0, Math.min(500 - this.player.size, this.player.y));
+                this.monsters.forEach(m => { if (!m.caught && Math.hypot(this.player.x - m.x, this.player.y - m.y) < 30) this.startBattle(m); });
+            },
+            draw() {
+                this.ctx.fillStyle = "#2d5a27"; this.ctx.fillRect(0, 0, 500, 500);
+                this.ctx.fillStyle = "#3a7a35";
+                this.grass.forEach(g => { this.ctx.beginPath(); this.ctx.arc(g.x, g.y, g.s, 0, Math.PI*2); this.ctx.fill(); });
+                const time = Date.now() / 500; this.ctx.font = "30px Arial"; this.ctx.textAlign = "center"; this.ctx.textBaseline = "middle";
+                this.monsters.forEach(m => { if (!m.caught) { const bob = Math.sin(time + m.offset) * 5; this.ctx.fillText(m.emoji, m.x, m.y + bob); } });
+                this.ctx.font = "35px Arial"; this.ctx.fillText("🚶", this.player.x + 15, this.player.y + 15);
+            },
+            startBattle(monster) {
+                this.state = 'BATTLE'; this.currentEnemy = monster; this.currentAlly = this.party[0];
+                document.getElementById('fakemon-battle-ui').style.display = 'block';
+                document.getElementById('enemy-name').innerText = monster.name;
+                document.getElementById('enemy-lv').innerText = monster.lv;
+                document.getElementById('enemy-hp').style.width = '100%';
+                document.getElementById('player-name').innerText = this.currentAlly.n;
+                document.getElementById('player-lv').innerText = this.currentAlly.lv;
+                document.getElementById('player-hp').style.width = (this.currentAlly.hp / this.currentAlly.maxHp * 100) + '%';
+                document.getElementById('enemy-sprite').innerText = monster.emoji;
+                document.getElementById('player-sprite').innerText = this.currentAlly.e;
+                this.showBattleText(`A wild ${monster.name} appeared!`);
+            },
+            showBattleText(txt) {
+                const el = document.getElementById('battle-text'); el.innerText = txt; el.style.display = 'block';
+                setTimeout(() => { el.style.display = 'none'; }, 2000);
+            },
+            battleAction(action) {
+                if (this.state !== 'BATTLE') return;
+                if (action === 'attack') {
+                    const dmg = 10 + Math.floor(Math.random() * 10); this.currentEnemy.hp -= dmg;
+                    this.showBattleText(`${this.currentAlly.n} attacked for ${dmg} dmg!`);
+                    this.updateBattleUI();
+                    if (this.currentEnemy.hp <= 0) {
+                        setTimeout(() => { this.showBattleText(`${this.currentEnemy.name} fainted! You caught it!`); this.currentEnemy.caught = true; this.caught++; document.getElementById('fakemon-caught').innerText = this.caught; setTimeout(() => this.endBattle(), 2000); }, 1000);
+                    } else { setTimeout(() => this.enemyTurn(), 1500); }
+                } else if (action === 'catch') {
+                    const chance = (1 - (this.currentEnemy.hp / this.currentEnemy.maxHp)) + 0.2;
+                    if (Math.random() < chance) { this.showBattleText(`Gotcha! ${this.currentEnemy.name} was caught!`); this.currentEnemy.caught = true; this.caught++; document.getElementById('fakemon-caught').innerText = this.caught; setTimeout(() => this.endBattle(), 2000); }
+                    else { this.showBattleText(`Oh no! It broke free!`); setTimeout(() => this.enemyTurn(), 1500); }
+                } else if (action === 'run') { this.showBattleText(`Got away safely!`); setTimeout(() => this.endBattle(), 1000); }
+            },
+            enemyTurn() {
+                const dmg = 5 + Math.floor(Math.random() * 5); this.currentAlly.hp -= dmg;
+                this.showBattleText(`${this.currentEnemy.name} attacked back for ${dmg} dmg!`);
+                this.updateBattleUI();
+                if (this.currentAlly.hp <= 0) { this.showBattleText(`Your Pokémon fainted!`); setTimeout(() => this.endBattle(), 2000); }
+            },
+            updateBattleUI() {
+                document.getElementById('enemy-hp').style.width = Math.max(0, (this.currentEnemy.hp / this.currentEnemy.maxHp * 100)) + '%';
+                document.getElementById('player-hp').style.width = Math.max(0, (this.currentAlly.hp / this.currentAlly.maxHp * 100)) + '%';
+            },
+            endBattle() { this.state = 'WORLD'; document.getElementById('fakemon-battle-ui').style.display = 'none'; this.currentAlly.hp = this.currentAlly.maxHp; }
+        };
+
+        /* --- SETTINGS --- */
+        GameHub.settings = {
+            changeBg(color) { document.body.style.backgroundColor = color; },
+            changeAccent(color) { document.documentElement.style.setProperty('--accent-gold', color); document.documentElement.style.setProperty('--accent-green', color); document.documentElement.style.setProperty('--accent-cyan', color); }
+        };
+
+        /* --- GLOBAL KEYS --- */
+        window.addEventListener('keydown', (e) => {
+            if (document.getElementById('snake-screen').classList.contains('active')) {
+                if (e.key === 'ArrowUp') GameHub.snake.setDir('UP'); if (e.key === 'ArrowDown') GameHub.snake.setDir('DOWN');
+                if (e.key === 'ArrowLeft') GameHub.snake.setDir('LEFT'); if (e.key === 'ArrowRight') GameHub.snake.setDir('RIGHT');
+            }
+            if (document.getElementById('fakemon-screen').classList.contains('active')) {
+                if (e.key === 'ArrowUp') GameHub.fakemon.startMove('UP'); if (e.key === 'ArrowDown') GameHub.fakemon.startMove('DOWN');
+                if (e.key === 'ArrowLeft') GameHub.fakemon.startMove('LEFT'); if (e.key === 'ArrowRight') GameHub.fakemon.startMove('RIGHT');
+            }
+        });
+        window.addEventListener('keyup', (e) => {
+            if (document.getElementById('fakemon-screen').classList.contains('active')) GameHub.fakemon.stopMove();
+        });
+    </script>
+</body>
+</html>
