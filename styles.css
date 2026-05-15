@@ -1,0 +1,151 @@
+/* --- CSS RESET & THEME --- */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+:root {
+    --bg-dark: #0f172a; --bg-card: #1e293b; --text-light: #f8fafc; --text-dim: #94a3b8;
+    --accent-gold: #fbbf24; --accent-green: #4ade80; --accent-cyan: #22d3ee; --danger: #ef4444;
+    --transition: all 0.2s ease;
+}
+body { background-color: var(--bg-dark); color: var(--text-light); font-family: 'Segoe UI', Roboto, sans-serif; min-height: 100vh; width: 100%; overflow-x: hidden; }
+
+/* --- SCREEN SYSTEM --- */
+.screen { display: none; min-height: 100vh; width: 100%; padding: 20px; flex-direction: column; align-items: center; animation: fadeIn 0.3s ease-in; }
+.screen.active { display: flex; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.back-btn { position: absolute; top: 20px; left: 20px; padding: 10px 15px; background: var(--bg-card); color: white; border: 2px solid var(--text-dim); border-radius: 8px; z-index: 100; font-weight: bold; cursor: pointer; }
+
+/* --- MAIN MENU --- */
+.hub-container { text-align: center; max-width: 1000px; margin: 0 auto; padding-top: 60px; width: 100%; }
+.hub-title { font-size: 3rem; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 4px; background: linear-gradient(to right, var(--accent-gold), var(--accent-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.game-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; width: 100%; padding: 20px; }
+.game-card { background: var(--bg-card); padding: 30px; border-radius: 20px; border: 3px solid transparent; display: flex; flex-direction: column; align-items: center; transition: var(--transition); cursor: pointer; }
+.game-card:active { transform: scale(0.95); }
+.game-card .icon { font-size: 4rem; margin-bottom: 15px; }
+.game-card h2 { margin-bottom: 10px; font-size: 1.8rem; }
+.game-card p { color: var(--text-dim); text-align: center; }
+.card-blackjack:hover { border-color: var(--accent-gold); }
+.card-scramble:hover { border-color: var(--accent-green); }
+.card-snake:hover { border-color: var(--accent-cyan); }
+.card-cookie:hover { border-color: #fca5a5; }
+.card-dice:hover { border-color: #f87171; }
+.card-fakemon:hover { border-color: #fbbf24; }
+
+.btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; margin: 10px; transition: var(--transition); cursor: pointer; }
+.settings-btn { position: fixed; top: 20px; right: 20px; z-index: 1000; width: 45px; height: 45px; border-radius: 50%; background: var(--bg-card); color: white; border: 2px solid var(--text-dim); cursor: pointer; }
+
+/* --- SHARED GAME CONTAINER --- */
+.game-container { display: flex; flex-direction: column; align-items: center; padding-top: 60px; width: 100%; max-width: 600px; text-align: center; }
+.stats-bar { display: flex; gap: 20px; margin-bottom: 15px; font-size: 1.1rem; }
+
+/* --- BLACKJACK --- */
+.bj-accent { color: var(--accent-gold); }
+.bj-btn { background: var(--accent-gold); color: #000; }
+.bj-table { display: flex; justify-content: center; gap: 20px; margin: 20px 0; }
+.hand-area { min-height: 100px; display: flex; gap: 10px; justify-content: center; }
+.card { width: 60px; height: 90px; background: white; border-radius: 8px; color: black; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; font-weight: bold; }
+.card.red { color: #ef4444; }
+.card.hidden { background: #475569; color: #475569; }
+.bet-controls { margin-bottom: 10px; }
+.bet-input { background: transparent; border: 1px solid var(--text-dim); color: white; width: 60px; text-align: center; padding: 5px; }
+
+/* --- WORD SCRAMBLE --- */
+.sc-accent { color: var(--accent-green); }
+.sc-btn { background: var(--accent-green); color: #000; }
+.sc-word { font-size: 2.5rem; font-weight: bold; margin: 20px 0; letter-spacing: 5px; }
+.sc-input { font-size: 1.2rem; padding: 10px; width: 80%; border-radius: 8px; border: none; text-align: center; margin-bottom: 20px; }
+.timer-bar-container { width: 100%; height: 10px; background: #334155; border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
+.timer-bar { height: 100%; width: 100%; background: var(--accent-green); transition: width 0.1s linear; }
+
+/* --- SNAKE --- */
+.sn-accent { color: var(--accent-cyan); }
+.sn-btn { background: var(--accent-cyan); color: #000; }
+.canvas-wrapper { position: relative; width: 100%; max-width: 400px; margin: 0 auto; }
+canvas { max-width: 100% !important; height: auto !important; background: #020617; border: 4px solid #334155; border-radius: 10px; }
+.pause-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3rem; font-weight: bold; display: none; }
+
+/* --- COOKIE CLICKER --- */
+.cookie-accent { color: #fca5a5; }
+.cookie-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 60vh;
+}
+.cookie-stats { margin-bottom: 20px; text-align: center; }
+.cookie-stats h2 { font-size: 2.5rem; }
+.cookie-stats p { font-size: 1.2rem; color: var(--text-dim); }
+.cookie-emoji {
+    font-size: 8rem;
+    cursor: pointer;
+    display: block;
+    margin: 20px 0;
+    transition: transform 0.05s;
+    -webkit-tap-highlight-color: transparent;
+}
+.cookie-emoji:active { transform: scale(0.9); }
+.upgrade-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 30px;
+    width: 100%;
+    max-width: 500px;
+}
+.upgrade-btn {
+    background: var(--bg-card);
+    color: white;
+    border: 2px solid #fca5a5;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: left;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+.upgrade-btn:disabled { opacity: 0.4; border-color: #475569; cursor: not-allowed; }
+
+/* --- DICE ROLL --- */
+.dice-accent { color: #f87171; }
+.dice-btn { background: #f87171; color: white; }
+.dice-bet-area { background: var(--bg-card); padding: 20px; border-radius: 15px; display: flex; flex-direction: column; gap: 10px; max-width: 300px; margin: 0 auto 20px; }
+.dice-bet-area input, .dice-bet-area select { padding: 10px; border-radius: 5px; border: none; }
+.dice-result { font-size: 4rem; margin: 20px 0; }
+
+/* --- FAKEMON BATTLE --- */
+.fakemon-accent { color: #fbbf24; }
+#fakemon-battle-ui {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 50%, #90EE90 50%, #90EE90 100%);
+    display: none; z-index: 10; border-radius: 10px; border: 4px solid #334155;
+    font-family: 'Courier New', monospace;
+}
+.battle-panel { position: absolute; background: #f8f8f8; border: 3px solid #444; border-radius: 10px; color: #333; padding: 10px; width: 180px; }
+.enemy-panel { top: 20px; right: 10px; }
+.player-panel { bottom: 140px; left: 10px; }
+.hp-bg { background: #ccc; height: 10px; width: 100%; border-radius: 5px; margin-top: 5px; overflow: hidden; }
+.hp-bar { background: #4ade80; height: 100%; width: 100%; transition: width 0.5s ease; }
+.battle-menu { position: absolute; bottom: 0; left: 0; width: 100%; height: 120px; background: #fff; border-top: 4px solid #444; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 10px; }
+.menu-btn { background: #eee; border: 2px solid #aaa; border-radius: 5px; font-size: 1rem; font-weight: bold; color: #333; cursor: pointer; }
+.battle-text { position: absolute; bottom: 130px; left: 10px; right: 10px; background: rgba(255,255,255,0.9); color: #000; padding: 10px; border: 2px solid #444; border-radius: 5px; font-size: 0.9rem; display: none; z-index: 11; }
+.battle-sprite { position: absolute; font-size: 70px; transition: all 0.3s; }
+.enemy-sprite { top: 60px; right: 40px; }
+.player-sprite { bottom: 160px; left: 40px; }
+
+/* --- D-PAD --- */
+.dpad { display: grid; grid-template-columns: repeat(3, 65px); gap: 10px; justify-content: center; margin-top: 20px; }
+.dbtn { width: 65px; height: 65px; background: var(--bg-card); color: white; border: 3px solid var(--accent-cyan); border-radius: 15px; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.dbtn:active { background: var(--accent-cyan); color: black; }
+
+/* --- SETTINGS & MODAL --- */
+.settings-container { background: var(--bg-card); padding: 30px; border-radius: 20px; width: 350px; margin-top: 60px; }
+.setting-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 2000; }
+.overlay-content { background: var(--bg-card); padding: 40px; border-radius: 20px; border: 2px solid var(--text-dim); text-align: center; }
+
+@media (max-width: 600px) {
+    .hub-title { font-size: 2rem; }
+    .game-grid { grid-template-columns: 1fr; }
+    .battle-panel { width: 140px; font-size: 0.7rem; }
+    .enemy-sprite { right: 10px; }
+    .player-sprite { left: 10px; }
+}

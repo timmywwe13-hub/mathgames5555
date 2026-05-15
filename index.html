@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ultimate Game Arcade v4.2</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <button class="settings-btn" onclick="GameHub.app.startGame('settings')">⚙️</button>
+
+    <!-- MAIN MENU -->
+    <div id="menu-screen" class="screen active">
+        <div class="hub-container">
+            <h1 class="hub-title">Game Arcade</h1>
+            <div class="game-grid">
+                <div class="game-card card-blackjack" onclick="GameHub.app.startGame('blackjack')">
+                    <div class="icon">🃏</div><h2>Blackjack</h2><p>Beat the dealer!</p>
+                </div>
+                <div class="game-card card-scramble" onclick="GameHub.app.startGame('scramble')">
+                    <div class="icon">🔤</div><h2>Word Scramble</h2><p>Unscramble letters!</p>
+                </div>
+                <div class="game-card card-snake" onclick="GameHub.app.startGame('snake')">
+                    <div class="icon">🐍</div><h2>Snake</h2><p>Eat and grow!</p>
+                </div>
+                <div class="game-card card-cookie" onclick="GameHub.app.startGame('cookie')">
+                    <div class="icon">🍪</div><h2>Cookie Clicker</h2><p>Click the cookie!</p>
+                </div>
+                <div class="game-card card-dice" onclick="GameHub.app.startGame('dice')">
+                    <div class="icon">🎲</div><h2>Dice Bet</h2><p>Lucky number!</p>
+                </div>
+                <div class="game-card card-fakemon" onclick="GameHub.app.startGame('fakemon')">
+                    <div class="icon">🐾</div><h2>FakeMon</h2><p>Catch them all!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BLACKJACK -->
+    <div id="blackjack-screen" class="screen">
+        <button class="back-btn" onclick="GameHub.app.showMenu()">← Menu</button>
+        <div class="game-container">
+            <h1 class="bj-accent">Blackjack</h1>
+            <div class="bet-controls">
+                Chips: $<span id="bj-chips">500</span> | Bet: $<input type="number" id="bj-bet-input" class="bet-input" value="10" min="10">
+                <button class="btn bj-btn" onclick="GameHub.blackjack.adjustBet(10)">+</button>
+                <button class="btn bj-btn" onclick="GameHub.blackjack.adjustBet(-10)">-</button>
+            </div>
+            <div class="bj-table">
+                <div>
+                    <h3>Dealer <span id="bj-dealer-score" style="display:none"></span></h3>
+                    <div id="bj-dealer-hand" class="hand-area"></div>
+                </div>
+                <div>
+                    <h3>You <span id="bj-player-score"></span></h3>
+                    <div id="bj-player-hand" class="hand-area"></div>
+                </div>
+            </div>
+            <div id="bj-controls">
+                <button id="bj-deal-btn" class="btn bj-btn" onclick="GameHub.blackjack.deal()">Deal</button>
+                <div id="bj-action-btns" style="display:none">
+                    <button class="btn bj-btn" onclick="GameHub.blackjack.hit()">Hit</button>
+                    <button class="btn bj-btn" onclick="GameHub.blackjack.stand()">Stand</button>
+                    <button class="btn bj-btn" onclick="GameHub.blackjack.double()">Double</button>
+                </div>
+            </div>
+            <h2 id="bj-message" style="margin-top:20px"></h2>
+            <button id="bj-next-btn" class="btn bj-btn" style="display:none; margin-top:20px" onclick="GameHub.blackjack.resetRound()">New Round</button>
+        </div>
+    </div>
+
+    <!-- WORD SCRAMBLE -->
+    <div id="scramble-screen" class="screen">
+        <button class="back-btn" onclick="GameHub.app.showMenu()">← Menu</button>
+        <div class="game-container">
+            <h1 class="sc-accent">Word Scramble</h1>
+            <div class="stats-bar">
+                <span>Score: <b id="sc-score">0</b></span>
+                <span>Streak: <b id="sc-streak">0</b></span>
+                <span>Word: <b id="sc-count">1</b>/10</span>
+            </div>
+            <div class="timer-bar-container"><div id="sc-timer-bar" class="timer-bar"></div></div>
+            <div id="sc-word" class="sc-word">-----</div>
+            <input type="text" id="sc-input" class="sc-input" placeholder="Type your guess..." autocomplete="off">
+            <div>
+                <button class="btn sc-btn" onclick="GameHub.wordScramble.checkGuess()">Submit</button>
+                <button id="sc-hint-btn" class="btn sc-btn" onclick="GameHub.wordScramble.useHint()">Hint (-3 pts)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SNAKE -->
+    <div id="snake-screen" class="screen">
+        <button class="back-btn" onclick="GameHub.app.showMenu()">← Menu</button>
+        <div class="game-container">
+            <h1 class="sn-accent">Classic Snake</h1>
+            <div style="margin: 10px 0; font-size: 1.2rem;">Score: <span id="sn-score">0</span> | High Score: <span id="sn-highscore">0</span></div>
+            <div class="canvas-wrapper">
+                <canvas id="snakeCanvas" width="400" height="400"></canvas>
+                <div id="sn-pause-msg" class="pause-overlay">PAUSED</div>
+            </div>
+            <div class="dpad">
+                <div></div>
+                <button class="dbtn" onclick="GameHub.snake.setDir('UP')">↑</button>
+                <div></div>
+                <button class="dbtn" onclick="GameHub.snake.setDir('LEFT')">←</button>
+                <button class="dbtn" onclick="GameHub.snake.setDir('DOWN')">↓</button>
+                <button class="dbtn" onclick="GameHub.snake.setDir('RIGHT')">→</button>
+            </div>
+            <button class="btn sn-btn" style="margin-top:15px" onclick="GameHub.snake.togglePause()">Pause</button>
+        </div>
+    </div>
+
+    <!-- COOKIE CLICKER -->
+    <div id="cookie-screen" class="screen">
+        <button class="back-btn" onclick="GameHub.app.showMenu()">← Menu</button>
+        <div class="game-container cookie-container">
+            <h1 class="cookie-accent">Cookie Clicker</h1>
+            <div class="cookie-stats">
+                <h2 id="cookie-count">0 Cookies</h2>
+                <p id="cookie-cps">CPS: 0</p>
+            </div>
+            <div id="cookie-clicker" class="cookie-emoji"
+                onclick="GameHub.cookieClicker.clickCookie()"
+                ontouchstart="GameHub.cookieClicker.handleTouch(event)">🍪</div>
+            <div class="upgrade-grid" id="upgrade-list"></div>
+        </div>
+    </div>
+
+    <!-- DICE ROLL -->
+    <div id="dice-screen" class="screen">
+        <button class="back-btn" onclick="GameHub.app.showMenu()">← Menu</button>
+        <div class="game-container">
+            <h1 class="dice-accent">Dice Bet</h1>
+            <div style="font-size: 1.5rem; margin-bottom: 10px;">Balance: $<span id="dice-balance">500</span></div>
+            <div class="dice-bet-area">
+                <label>Your Bet: $</label>
+                <input type="number" id="dice-bet-amount" value="10" min="1">
+                <label>Pick Number (1-6):</label>
+                <select id="dice-number">
+                    <option value="1">1</option><option value="2">2</option>
+                    <option value="3">3</option><option value="4">4</option>
+                    <option value="5">5</option><option value="6">6</option>
+                </select>
+                <button class="btn dice-btn" onclick="GameHub.diceRoll.roll()">Roll Dice!</button>
+            </div>
+            <div id="dice-result-display" class="dice-result">🎲 ?</div>
+            <h2 id="dice-message">Place your bet!</h2>
+        </div>
+    </div>
+
+    <!-- FAKEMON -->
+    <div id="fakemon-screen" class="screen">
+        <button class="back-btn" onclick="GameHub.app.showMenu()">← Menu</button>
+        <div class="game-container">
+            <h1 class="fakemon-accent">FakeMon</h1>
+            <div style="font-size: 1.5rem; margin-bottom: 10px;">Caught: <span id="fakemon-caught">0</span> / 10</div>
+            <div class="canvas-wrapper">
+                <canvas id="fakemonCanvas" width="500" height="500"></canvas>
+                <div id="fakemon-battle-ui">
+                    <div class="battle-panel enemy-panel">
+                        <div id="enemy-name">Monster</div>
+                        <div style="font-size: 0.8rem">Lv. <span id="enemy-lv">5</span></div>
+                        <div class="hp-bg"><div id="enemy-hp" class="hp-bar"></div></div>
+                    </div>
+                    <div class="battle-sprite enemy-sprite" id="enemy-sprite">🐶</div>
+                    <div class="battle-panel player-panel">
+                        <div id="player-name">Leaflet</div>
+                        <div style="font-size: 0.8rem">Lv. <span id="player-lv">10</span></div>
+                        <div class="hp-bg"><div id="player-hp" class="hp-bar"></div></div>
+                    </div>
+                    <div class="battle-sprite player-sprite" id="player-sprite">🌱</div>
+                    <div id="battle-text" class="battle-text">A wild monster appeared!</div>
+                    <div class="battle-menu">
+                        <button class="menu-btn" onclick="GameHub.fakemon.battleAction('attack')">Battle</button>
+                        <button class="menu-btn" onclick="GameHub.fakemon.battleAction('catch')">Catch</button>
+                        <button class="menu-btn" onclick="GameHub.fakemon.battleAction('pokemon')">Pokémon</button>
+                        <button class="menu-btn" onclick="GameHub.fakemon.battleAction('run')">Run</button>
+                    </div>
+                </div>
+            </div>
+            <div class="dpad">
+                <div></div>
+                <button class="dbtn" ontouchstart="GameHub.fakemon.startMove('UP')" ontouchend="GameHub.fakemon.stopMove()" onmousedown="GameHub.fakemon.startMove('UP')" onmouseup="GameHub.fakemon.stopMove()">↑</button>
+                <div></div>
+                <button class="dbtn" ontouchstart="GameHub.fakemon.startMove('LEFT')" ontouchend="GameHub.fakemon.stopMove()" onmousedown="GameHub.fakemon.startMove('LEFT')" onmouseup="GameHub.fakemon.stopMove()">←</button>
+                <button class="dbtn" ontouchstart="GameHub.fakemon.startMove('DOWN')" ontouchend="GameHub.fakemon.stopMove()" onmousedown="GameHub.fakemon.startMove('DOWN')" onmouseup="GameHub.fakemon.stopMove()">↓</button>
+                <button class="dbtn" ontouchstart="GameHub.fakemon.startMove('RIGHT')" ontouchend="GameHub.fakemon.stopMove()" onmousedown="GameHub.fakemon.startMove('RIGHT')" onmouseup="GameHub.fakemon.stopMove()">→</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="settings-screen" class="screen">
+        <button class="back-btn" onclick="GameHub.app.showMenu()">← Menu</button>
+        <div class="settings-container">
+            <h1 style="text-align:center; margin-bottom:20px;">Settings</h1>
+            <div class="setting-item">
+                <label>Background:</label>
+                <select onchange="GameHub.settings.changeBg(this.value)">
+                    <option value="var(--bg-dark)">Default Dark</option>
+                    <option value="#1a1a2e">Midnight Blue</option>
+                    <option value="#2d1a2e">Deep Purple</option>
+                    <option value="#1a2e1a">Forest Green</option>
+                    <option value="#000000">Pitch Black</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label>Accent Color:</label>
+                <input type="color" onchange="GameHub.settings.changeAccent(this.value)">
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal-overlay" class="overlay">
+        <div class="overlay-content">
+            <h1 id="modal-title">Game Over</h1>
+            <p id="modal-body" style="margin: 20px 0; font-size: 1.2rem;"></p>
+            <button id="modal-btn" class="btn">Play Again</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
